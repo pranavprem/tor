@@ -1,0 +1,28 @@
+services:
+  tor:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: tor-proxy
+    restart: unless-stopped
+    network_mode: bridge
+    ports:
+      # Expose SOCKS proxy port - Firefox can connect via host IP
+      - "9050:9050"
+      # Expose HTTP tunnel port (alternative for HTTP proxy)
+      - "9080:9080"
+      # Expose control port (optional, for monitoring)
+      - "9051:9051"
+    volumes:
+      # Persist TOR data directory
+      - tor-data:/var/lib/tor
+    healthcheck:
+      test: ["CMD-SHELL", "nc -z localhost 9050 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+volumes:
+  tor-data:
+    name: tor-data

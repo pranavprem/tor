@@ -1,0 +1,22 @@
+# TOR Configuration File
+
+# SOCKS proxy port - Firefox will connect here
+SocksPort 0.0.0.0:9050
+
+# HTTP tunnel port (for HTTP proxy connections)
+HTTPTunnelPort 0.0.0.0:9080
+
+# Control port (optional, for monitoring)
+ControlPort 0.0.0.0:9051
+
+# Allow connections from other containers
+SocksPolicy accept 0.0.0.0/0
+
+# Log level
+Log notice stdout
+
+# Data directory
+DataDirectory /var/lib/tor
+
+# Run as daemon (handled by Docker)
+RunAsDaemon 0
