@@ -5,16 +5,14 @@ services:
       dockerfile: Dockerfile
     container_name: tor-proxy
     restart: unless-stopped
-    network_mode: bridge
+    networks:
+      - tornet
     ports:
-      # Expose SOCKS proxy port - Firefox can connect via host IP
+      # Expose SOCKS proxy port (for host access if needed)
       - "9050:9050"
-      # Expose HTTP tunnel port (alternative for HTTP proxy)
-      - "9080:9080"
       # Expose control port (optional, for monitoring)
       - "9051:9051"
     volumes:
-      # Persist TOR data directory
       - tor-data:/var/lib/tor
     healthcheck:
       test: ["CMD-SHELL", "nc -z localhost 9050 || exit 1"]
@@ -23,6 +21,40 @@ services:
       retries: 3
       start_period: 40s
 
+  firefox:
+    image: lscr.io/linuxserver/firefox:latest
+    container_name: tor-firefox
+    restart: unless-stopped
+    depends_on:
+      tor:
+        condition: service_healthy
+    networks:
+      - tornet
+    ports:
+      - "3000:3000"   # Web UI (KasmVNC)
+      - "3001:3001"   # HTTPS Web UI
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Los_Angeles
+      # Route all Firefox traffic through Tor SOCKS proxy
+      - HTTP_PROXY=socks5://tor:9050
+      - HTTPS_PROXY=socks5://tor:9050
+    volumes:
+      - firefox-config:/config
+    shm_size: "2gb"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:3000 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+networks:
+  tornet:
+    name: tornet
+
 volumes:
   tor-data:
     name: tor-data
+  firefox-config:
+    name: tor-firefox-config
