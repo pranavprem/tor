@@ -31,15 +31,11 @@ services:
     networks:
       - tornet
     ports:
-      - "3000:3000"   # Web UI (KasmVNC)
-      - "3001:3001"   # HTTPS Web UI
+      - "3001:3001"   # HTTPS Web UI (KasmVNC)
     environment:
       - PUID=1000
       - PGID=1000
       - TZ=America/Los_Angeles
-      # Route all Firefox traffic through Tor SOCKS proxy
-      - HTTP_PROXY=socks5://tor:9050
-      - HTTPS_PROXY=socks5://tor:9050
     volumes:
       - firefox-config:/config
     shm_size: "2gb"
